@@ -5,6 +5,26 @@ namespace Dz2
 {
     public class Program
     {
+        static object CreateVinyl(Type vinylType, int id)
+        {
+            var vinyl = Activator.CreateInstance(vinylType);
+            vinylType.GetProperty("Id").SetValue(vinyl, id);
+            vinylType.GetProperty("Title").SetValue(vinyl, "The Dark Side of the Moon");
+            vinylType.GetProperty("Artist").SetValue(vinyl, "Pink Floyd");
+            vinylType.GetProperty("Publisher").SetValue(vinyl, "Harvest Records");
+            vinylType.GetProperty("TrackCount").SetValue(vinyl, 10);
+            vinylType.GetProperty("Genre").SetValue(vinyl, "Progressive Rock");
+            vinylType.GetProperty("ReleaseYear").SetValue(vinyl, 1973);
+            vinylType.GetProperty("CostPrice").SetValue(vinyl, 15.99m);
+            vinylType.GetProperty("SalePrice").SetValue(vinyl, 24.99m);
+            vinylType.GetProperty("IsOnSale").SetValue(vinyl, true);
+            vinylType.GetProperty("DiscountPercentage").SetValue(vinyl, 20);
+            vinylType.GetProperty("SoldCount").SetValue(vinyl, 5000);
+            vinylType.GetProperty("IsReserved").SetValue(vinyl, true);
+            vinylType.GetProperty("ReservedByUserId").SetValue(vinyl, 42);
+            return vinyl;
+        }
+
         static void Main()
         {
             AppDomain domain = AppDomain.CreateDomain("ShopVinylsDomain");
@@ -13,76 +33,96 @@ namespace Dz2
                 "ShopVinyls.ServiceVinyl");
 
             dynamic vinylService = service;
+            var vinylType = service.GetType().Assembly.GetType("ShopVinyls.Vinyl");
+
+            var vinyl = CreateVinyl(vinylType, 12);
 
             Thread createVinyl = new Thread(() =>
             {
-                var vinyl = new Vinyl
+                try
                 {
-                    Id = 12,
-                    Title = "The Dark Side of the Moon",
-                    Artist = "Pink Floyd",
-                    Publisher = "Harvest Records",
-                    TrackCount = 10,
-                    Genre = "Progressive Rock",
-                    ReleaseYear = 1973,
-                    CostPrice = 15.99m,
-                    SalePrice = 24.99m,
-                    IsOnSale = true,
-                    DiscountPercentage = 20,
-                    SoldCount = 5000,
-                    IsReserved = true,
-                    ReservedByUserId = 42
-                };
-                vinylService.AddVinyl(vinyl);
-            });
-            Thread readVinyls = new Thread(() =>
-            {
-                var vinyls = vinylService.GetAllVinyls();
-                foreach (var vinyl in vinyls)
+                    var vinyl2 = Activator.CreateInstance(vinylType);
+                    vinylType.GetProperty("Id").SetValue(vinyl2, 12);
+                    vinylType.GetProperty("Title").SetValue(vinyl2, "The Dark Side of the Moon");
+                    vinylType.GetProperty("Artist").SetValue(vinyl2, "Pink Floyd");
+                    vinylType.GetProperty("Publisher").SetValue(vinyl2, "Harvest Records");
+                    vinylType.GetProperty("TrackCount").SetValue(vinyl2, 10);
+                    vinylType.GetProperty("Genre").SetValue(vinyl2, "Progressive Rock");
+                    vinylType.GetProperty("ReleaseYear").SetValue(vinyl2, 1973);
+                    vinylType.GetProperty("CostPrice").SetValue(vinyl2, 15.99m);
+                    vinylType.GetProperty("SalePrice").SetValue(vinyl2, 24.99m);
+                    vinylType.GetProperty("IsOnSale").SetValue(vinyl2, true);
+                    vinylType.GetProperty("DiscountPercentage").SetValue(vinyl2, 20);
+                    vinylType.GetProperty("SoldCount").SetValue(vinyl2, 5000);
+                    vinylType.GetProperty("IsReserved").SetValue(vinyl2, true);
+                    vinylType.GetProperty("ReservedByUserId").SetValue(vinyl2, 42);
+
+                    vinylService.AddVinyl(vinyl2);
+                    Console.WriteLine("Vinyl added successfully");
+                }
+                catch (Exception ex)
                 {
-                    Console.WriteLine(
-                            $"ID: {vinyl.Id}, Title: {vinyl.Title}, Artist: {vinyl.Artist}, Publisher: {vinyl.Publisher}, Tracks: {vinyl.TrackCount}, Genre: {vinyl.Genre}, Year: {vinyl.ReleaseYear}, CostPrice: {vinyl.CostPrice}, SalePrice: {vinyl.SalePrice}, IsOnSale: {vinyl.IsOnSale}, Discount: {vinyl.DiscountPercentage}%, SoldCount: {vinyl.SoldCount}, Reserved: {vinyl.IsReserved}, ReservedByUserId: {vinyl.ReservedByUserId}");
+                    Console.WriteLine($"Error in AddVinyl: {ex.Message}");
                 }
             });
 
+
+            createVinyl.Start();
+            createVinyl.Join();
+
             Thread updateVinyl = new Thread(() =>
             {
-                var vinyl = new Vinyl
+                try
                 {
-                    Id = 1,
-                    Title = "The Dark Side of the Moon",
-                    Artist = "Pink Floyd",
-                    Publisher = "Harvest Records",
-                    TrackCount = 10,
-                    Genre = "Progressive Rock",
-                    ReleaseYear = 1973,
-                    CostPrice = 15.99m,
-                    SalePrice = 24.99m,
-                    IsOnSale = true,
-                    DiscountPercentage = 20,
-                    SoldCount = 5000,
-                    IsReserved = true,
-                    ReservedByUserId = 42
-                };
-                vinylService.UpdateVinyl(vinyl);
+                    vinylService.UpdateVinyl(vinyl);
+                    Console.WriteLine("Vinyl updated successfully");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error in UpdateVinyl: {ex.Message}");
+                }
             });
 
             Thread deleteThread = new Thread(() =>
             {
-                vinylService.DeleteVinyl(11);
+                try
+                {
+                    vinylService.DeleteVinyl(11);
+                    Console.WriteLine("Vinyl deleted successfully");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error in DeleteVinyl: {ex.Message}");
+                }
             });
 
-            createVinyl.Start();
+            Thread readVinyls = new Thread(() =>
+            {
+                try
+                {
+                    var vinyls = vinylService.GetAllVinyls();
+                    foreach (var v in vinyls)
+                    {
+                        Console.WriteLine(
+                            $"ID: {v.Id}, Title: {v.Title}, Artist: {v.Artist}, Publisher: {v.Publisher}, Tracks: {v.TrackCount}, Genre: {v.Genre}, Year: {v.ReleaseYear}, CostPrice: {v.CostPrice}, SalePrice: {v.SalePrice}, IsOnSale: {v.IsOnSale}, Discount: {v.DiscountPercentage}%, SoldCount: {v.SoldCount}, Reserved: {v.IsReserved}, ReservedByUserId: {v.ReservedByUserId}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error in GetAllVinyls: {ex.Message}");
+                }
+            });
+
             updateVinyl.Start();
             deleteThread.Start();
             readVinyls.Start();
 
-            createVinyl.Join();
             updateVinyl.Join();
             deleteThread.Join();
             readVinyls.Join();
 
             Console.ReadKey();
         }
+
     }
 }
